@@ -1,0 +1,50 @@
+@import 'tailwindcss';
+@import '@salesmora/ui/styles/tokens.css';
+@source '../../packages/ui/src';
+
+:root {
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  background: var(--sm-canvas);
+  color: var(--sm-text);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--sm-canvas);
+  color: var(--sm-text);
+}
+
+::selection {
+  background: var(--sm-action);
+  color: var(--sm-action-foreground);
+}
+
+:focus-visible {
+  outline-color: var(--sm-focus);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

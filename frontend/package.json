@@ -1,0 +1,39 @@
+{
+  "name": "@salesmora/frontend",
+  "private": true,
+  "packageManager": "pnpm@11.9.0",
+  "scripts": {
+    "dev": "pnpm --filter @salesmora/ui build && pnpm --filter @salesmora/api-client build && next dev",
+    "build": "pnpm --filter @salesmora/ui build && pnpm --filter @salesmora/api-client build && next build",
+    "start": "next start",
+    "lint": "eslint src packages next.config.ts postcss.config.mjs",
+    "typecheck": "pnpm --filter @salesmora/ui build && pnpm --filter @salesmora/api-client build && tsc --noEmit && pnpm --filter @salesmora/ui typecheck && pnpm --filter @salesmora/api-client typecheck",
+    "test": "pnpm --filter @salesmora/api-client test",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"packages/**/*.{ts,tsx,css,json}\" \"!packages/**/dist/**\" \"!packages/api-client/openapi/**\" \"!packages/api-client/src/generated/**\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"packages/**/*.{ts,tsx,css,json}\" \"!packages/**/dist/**\" \"!packages/api-client/openapi/**\" \"!packages/api-client/src/generated/**\"",
+    "sync:api": "node scripts/sync-openapi.mjs",
+    "generate:api": "openapi-typescript packages/api-client/openapi/v1.json -o packages/api-client/src/generated/v1.ts"
+  },
+  "dependencies": {
+    "@salesmora/api-client": "workspace:*",
+    "@salesmora/ui": "workspace:*",
+    "next": "^16.4.5",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@next/eslint-plugin-next": "^16.4.5",
+    "@tailwindcss/postcss": "^4.3.5",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "eslint": "^10.14.0",
+    "globals": "^17.14.0",
+    "openapi-typescript": "^7.8.0",
+    "prettier": "^3.9.10",
+    "tailwindcss": "^4.3.5",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.1"
+  }
+}

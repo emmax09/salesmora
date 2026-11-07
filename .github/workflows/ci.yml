@@ -5,8 +5,21 @@ on:
   pull_request:
 
 jobs:
-  quality:
+  repository-boundaries:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.15.0
+      - run: node scripts/check-package-boundaries.mjs
+      - run: node scripts/check-source-line-limits.mjs
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -16,12 +29,66 @@ jobs:
         with:
           node-version: 24.15.0
           cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
-      - run: pnpm check:source-lines
-      - run: pnpm format:check
-      - run: pnpm db:validate
-      - run: pnpm db:generate
+      - run: pnpm run generate:api
+      - run: git diff --exit-code -- frontend/packages/api-client/src/generated/v1.ts
+        working-directory: .
+      - run: pnpm run format:check
       - run: pnpm lint
-      - run: pnpm typecheck
+      - run: pnpm run typecheck
       - run: pnpm test
       - run: pnpm build
+
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17.11-alpine3.23
+        env:
+          POSTGRES_USER: salesmora
+          POSTGRES_PASSWORD: salesmora
+          POSTGRES_DB: salesmora
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U salesmora -d salesmora"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+      redis:
+        image: redis:8.2.3-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      APP_ENV: test
+      API_PORT: 3001
+      API_ORIGIN: http://localhost:3001
+      WEB_ORIGIN: http://localhost:3000
+      DATABASE_URL: postgresql+psycopg://salesmora:salesmora@127.0.0.1:5432/salesmora
+      REDIS_URL: redis://127.0.0.1:6379/0
+      APP_SECRET_KEY: test-only-secret-key-with-at-least-32-characters
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.lock
+      - run: python -m pip install -r requirements-dev.lock .
+      - run: ruff check app worker migrations scripts tests
+      - run: ruff format --check app worker migrations scripts tests
+      - run: pytest
+      - run: alembic upgrade head
+      - run: alembic check
+      - run: python scripts/export_openapi.py --check
+      - run: python scripts/check_contract.py
+      - run: python -c "from worker.celery_app import celery_app; celery_app.loader.import_default_modules(); assert 'salesmora.send_email' in celery_app.tasks"

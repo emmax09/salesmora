@@ -8,15 +8,23 @@ const ignoredDirectories = new Set([
   '.git',
   '.next',
   '.turbo',
+  '.venv',
+  '.venv-runtime',
+  '__pycache__',
+  '.pytest_cache',
+  '.ruff_cache',
   'build',
   'coverage',
   'dist',
   'node_modules',
 ]);
 const ignoredGeneratedDirectories = new Set([
-  path.join('packages', 'database', 'src', 'generated', 'prisma'),
+  path.join('backend', 'packages', 'database', 'src', 'generated', 'prisma'),
 ]);
-const ignoredGeneratedFiles = new Set([path.join('apps', 'web', 'next-env.d.ts')]);
+const ignoredGeneratedFiles = new Set([
+  path.join('frontend', 'next-env.d.ts'),
+  path.join('frontend', 'packages', 'api-client', 'src', 'generated', 'v1.ts'),
+]);
 const sourceExtensions = new Set([
   '.ts',
   '.tsx',
@@ -24,6 +32,7 @@ const sourceExtensions = new Set([
   '.jsx',
   '.mjs',
   '.cjs',
+  '.py',
   '.css',
   '.scss',
   '.sql',
@@ -36,10 +45,7 @@ async function visit(directory) {
     const filePath = path.join(directory, entry.name);
     const relativePath = path.relative(rootDirectory, filePath);
     if (entry.isDirectory()) {
-      if (
-        !ignoredDirectories.has(entry.name) &&
-        !ignoredGeneratedDirectories.has(relativePath)
-      ) {
+      if (!ignoredDirectories.has(entry.name) && !ignoredGeneratedDirectories.has(relativePath)) {
         await visit(filePath);
       }
       continue;

@@ -1,5 +1,0 @@
-{
-  "name": "@salesmora/config",
-  "private": true,
-  "files": ["eslint.config.mjs", "prettier.json", "typescript"]
-}
